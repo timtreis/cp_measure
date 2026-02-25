@@ -129,6 +129,8 @@ def get_intensity(masks: numpy.ndarray, pixels: numpy.ndarray):
     if pixels.ndim == 2:
         img = pixels.reshape(1, *pixels.shape)
         masked_image = img
+    elif pixels.ndim == 3 and masks.ndim == 2:  # 3D image, 2D mask.
+        masks = masks.reshape(1, *masks.shape)
 
     unique_vals = numpy.unique(masks)
     # MODIFIED: Extract the number of objects by explicitly removing 0s
@@ -176,10 +178,10 @@ def get_intensity(masks: numpy.ndarray, pixels: numpy.ndarray):
         masked_labels = labels
         masked_outlines = outlines
 
-        lmask = masked_labels > 0 & numpy.isfinite(img)  # Ignore NaNs, Infs
+        lmask = masked_labels > 0 & numpy.isfinite(masked_image)  # Ignore NaNs, Infs
         has_objects = numpy.any(lmask)
         if has_objects:
-            limg = img[lmask]
+            limg = masked_image[lmask]
 
             llabels = labels[lmask]
 
@@ -327,7 +329,7 @@ def get_intensity(masks: numpy.ndarray, pixels: numpy.ndarray):
             # END OF ITERATIONS
 
         emask = masked_outlines > 0
-        eimg = img[emask]
+        eimg = masked_image[emask]
         elabels = labels[emask]
         has_edge = len(eimg) > 0
 
